@@ -27,7 +27,7 @@ contract MyToken {
 
   /* Initialize token balance and allocate to contract sender.*/
   function MyToken(uint256 initialSupply, string tokenName, string tokenSymbol) public {
-    totalSupply = initialSupply * 10 ** unit256(decimals);
+    totalSupply = initialSupply * 10 ** uint256(decimals);
     balanceOf[msg.sender] = totalSupply;
     name = tokenName;
     symbol = tokenSymbol;
@@ -48,7 +48,7 @@ contract MyToken {
    require(balanceOf[to] + value >= balanceOf[to]);
 
    // save balance before hand
-   unit prevBalance = balanceOf[from] + balanceOf[to];
+   uint prevBalance = balanceOf[from] + balanceOf[to];
     
    // add and subtract new balances
    balanceOf[msg.sender] -= value;
