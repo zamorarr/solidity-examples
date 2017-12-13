@@ -1,8 +1,11 @@
 pragma solidity ^0.4.18;
 
 /* 
-   Token should follow ERC-20 Token Standard to be recognized as currency
-   https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
+ * Token should follow ERC-20 Token Standard to be recognized as currency
+ * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md
+ *
+ * Original code example from ethereum.org
+ * https://www.ethereum.org/token
 */
 contract MyToken {
   // public variables of the token
@@ -20,13 +23,17 @@ contract MyToken {
 
   // events
   event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
 
   /* Initialize token balance and allocate to contract sender.*/
   function MyToken(uint256 initialSupply, string tokenName, string tokenSymbol) public {
-    balanceOf[msg.sender] = initialSupply;
+    totalSupply = initialSupply * 10 ** unit256(decimals);
+    balanceOf[msg.sender] = totalSupply;
     name = tokenName;
     symbol = tokenSymbol;
-    totalSupply = initialSupply * 10 ** unit256(decimals);
+
+    // record transfer (creation) of tokens 
+    Transfer(address(0), msg.sender, totalSupply);
   }
 
   /** 
@@ -34,7 +41,7 @@ contract MyToken {
   **/
  function _transfer(address from, address to, uint value) internal {
    // prevent transfer to 0x0 address. Use burn() instead.
-   require(to != 0x0);
+   require(to != address(0));
    
    // check if sender has balance and for overflows
    require(balanceOf[msg.sender] >= value);
@@ -73,7 +80,7 @@ contract MyToken {
    * @param to address of the recipient
    * @param value the amount to send
   */
-  function transferFrom(address from, address to, uint256 value) returns (bool success) public {
+  function transferFrom(address from, address to, uint256 value) public returns (bool success) {
     // check allowance to ensure that sender is allowed to send value on behalf of from
     require(value <= allowance[from][msg.sender]);
 
@@ -83,6 +90,21 @@ contract MyToken {
     // make the transfer
     _transfer(from, to, value);
 
+    return true;
+  }
+
+  /**
+  * Set allowance for other address
+  * 
+  * Allows spender to spend no more than value tokens on your behalf.
+  * Must fire the Approval event.
+  *
+  * @param spender address authorized to spend
+  * @param value max amount they can spend
+  */
+  function approve(address spender, uint256 value) public returns (bool success) {
+    allowance[msg.sender][spender] = value;
+    Approval(msg.sender, spender, value);
     return true;
   }
 
