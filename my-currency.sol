@@ -24,6 +24,7 @@ contract MyToken {
   // events
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
+  event Burn(address indexed owner, uint256 value);
 
   /* Initialize token balance and allocate to contract sender.*/
   function MyToken(uint256 initialSupply, string tokenName, string tokenSymbol) public {
@@ -106,6 +107,40 @@ contract MyToken {
     allowance[msg.sender][spender] = value;
     Approval(msg.sender, spender, value);
     return true;
+  }
+  
+  /** 
+  * Internal burn. Can only be called by this contract.
+  **/ 
+  function _burn(address from, uint256 value) internal returns (bool success) {
+    require(balanceOf[from] >= value);
+    balanceOf[from] -= value;
+    totalSupply -= value;
+    Burn(from, value);
+    return true;
+  }
+ 
+  /**
+   * Destroy tokens
+   * 
+   * Remove `value` tokens from `totalSupply` irreversibly
+   *
+   * @param value amount of money to burn
+   */
+  function burn(uint256 value) public returns (bool success) {
+    return _burn(msg.sender, value); 
+  }
+  
+  /**
+   * Destroy tokens from other account
+   * Remove `value` tokens from system irreversibly on behalf of `from`
+   *
+   * @param from address of sender
+   * @param value amount of money to burn
+   */
+  function burnFrom(address from, uint256 value) public returns (bool success) {
+    require(value <= allowance[from][msg.sender]);
+    return _burn(from, value); 
   }
 
 }
